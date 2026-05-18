@@ -106,7 +106,7 @@
 <div class="form-body">
 
   <div id="formWrap">
-    <form id="regForm" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST">
+    <form id="regForm" action="https://script.google.com/macros/s/AKfycbw37hHVwgiOfdwmNYxcBetD-rvZHFmiX_B22OBHjeHGlaymmGaNh3wRm7X10hWL1eRc/exec" method="POST">
       <div class="section-card">
         <div class="section-label">① Maklumat Peribadi</div>
         <div class="field"><label>Nama penuh <span class="req">*</span></label><input type="text" name="nama_penuh" placeholder="Nama seperti dalam kad pengenalan" required /></div>
@@ -193,7 +193,16 @@
 <script>
   function pickVenue(el,val){document.querySelectorAll('.venue-pick').forEach(v=>v.classList.remove('selected'));el.classList.add('selected');el.querySelector('input[type=radio]').checked=true;}
   document.querySelectorAll('.opt-item input').forEach(input=>{input.addEventListener('change',()=>{if(input.type==='radio'){document.querySelectorAll(`input[name="${input.name}"]`).forEach(r=>r.closest('.opt-item').classList.remove('checked'));}if(input.checked)input.closest('.opt-item').classList.add('checked');else input.closest('.opt-item').classList.remove('checked');});});
-  document.getElementById('regForm').addEventListener('submit',async(e)=>{e.preventDefault();const btn=e.target.querySelector('.submit-btn');btn.textContent='Menghantar...';btn.disabled=true;try{const res=await fetch(e.target.action,{method:'POST',body:new FormData(e.target),headers:{'Accept':'application/json'}});if(res.ok){document.getElementById('formWrap').style.display='none';document.getElementById('successScreen').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});}else{alert('Ralat menghantar. Sila cuba lagi.');btn.textContent='Hantar Pendaftaran';btn.disabled=false;}}catch{alert('Tiada sambungan internet. Sila cuba lagi.');btn.textContent='Hantar Pendaftaran';btn.disabled=false;}});
+  document.getElementById('regForm').addEventListener('submit',async(e)=>{e.preventDefault();const btn=e.target.querySelector('.submit-btn');btn.innerHTML='Menghantar...';btn.disabled=true;
+    const fd=new FormData(e.target);
+    const data={};
+    // Handle multiple checkboxes (topik)
+    const topikVals=[];
+    fd.forEach((val,key)=>{if(key==='topik'){topikVals.push(val);}else{data[key]=val;}});
+    if(topikVals.length)data.topik=topikVals.join(', ');
+    try{const res=await fetch(e.target.action,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'application/json'}});
+    const json=await res.json();
+    if(json.result==='success'){document.getElementById('formWrap').style.display='none';document.getElementById('successScreen').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});}else{alert('Ralat menghantar. Sila cuba lagi.');btn.innerHTML='Hantar Pendaftaran';btn.disabled=false;}}catch{alert('Tiada sambungan internet. Sila cuba lagi.');btn.innerHTML='Hantar Pendaftaran';btn.disabled=false;}});
 </script>
 </body>
 </html>
