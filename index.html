@@ -199,16 +199,40 @@
     const topikVals=[];
     fd.forEach((val,key)=>{if(key==='topik'){topikVals.push(val);}else{data[key]=val;}});
     if(topikVals.length)data.topik=topikVals.join(', ');
-    try{
-      await fetch(e.target.action,{method:'POST',body:JSON.stringify(data),headers:{'Content-Type':'text/plain'},mode:'no-cors'});
+
+    // Build query string and submit via hidden iframe (bypasses CORS)
+    const params=new URLSearchParams(data).toString();
+    const scriptUrl=e.target.action;
+
+    const iframe=document.createElement('iframe');
+    iframe.name='hidden_iframe';
+    iframe.style.display='none';
+    document.body.appendChild(iframe);
+
+    const hiddenForm=document.createElement('form');
+    hiddenForm.method='POST';
+    hiddenForm.action=scriptUrl;
+    hiddenForm.target='hidden_iframe';
+
+    Object.keys(data).forEach(key=>{
+      const input=document.createElement('input');
+      input.type='hidden';
+      input.name=key;
+      input.value=data[key]||'';
+      hiddenForm.appendChild(input);
+    });
+
+    document.body.appendChild(hiddenForm);
+
+    iframe.onload=function(){
       document.getElementById('formWrap').style.display='none';
       document.getElementById('successScreen').classList.add('show');
       window.scrollTo({top:0,behavior:'smooth'});
-    }catch(err){
-      alert('Ralat menghantar. Sila cuba lagi.');
-      btn.innerHTML='Hantar Pendaftaran';
-      btn.disabled=false;
-    }});
+      document.body.removeChild(iframe);
+      document.body.removeChild(hiddenForm);
+    };
+
+    hiddenForm.submit();});
 </script>
 </body>
 </html>
